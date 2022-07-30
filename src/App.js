@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from "react";
+import axios from "axios";
+import React, { useMemo, useState, useEffect } from "react";
 import ClassCounter from "./components/ClassCounter";
 import Counter from "./components/Counter";
+import { usePosts } from "./hooks/usePosts";
 import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostItem from "./components/PostItem";
@@ -10,31 +12,24 @@ import MyInput from "./components/UI/input/MyInput";
 import MyModal from "./components/UI/MyModal/MyModal";
 import MySelect from "./components/UI/select/MySelect";
 import "./styles/App.css";
+import PostService from "./API/PostService";
+import Loader from "./components/UI/Loader/Loader";
+import { useFetching } from "./hooks/useFetching";
 
 function App() {
-  const [posts, setPosts] = useState([
-    { id: 1, title: "Javascript", body: "qqq" },
-    { id: 2, title: "rrr", body: "fff 2" },
-    { id: 3, title: "ppp", body: "aaa" },
-  ]);
-
+  const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState({ sort: "", query: "" });
   const [modal, setModal] = useState(false);
+  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
 
-  const sortedPosts = useMemo(() => {
-    if (filter.sort) {
-      return [...posts].sort((a, b) =>
-        a[filter.sort].localeCompare(b[filter.sort])
-      );
-    }
-    return posts;
-  }, [filter.sort, posts]);
+  const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+    const response = await PostService.getAll();
+    setPosts(response.data);
+  });
 
-  const sortedAndSearchedPosts = useMemo(() => {
-    return sortedPosts.filter((post) =>
-      post.title.toLowerCase().includes(filter.query)
-    );
-  }, [filter.query, sortedPosts]);
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
@@ -55,11 +50,24 @@ function App() {
       </MyModal>
       <hr style={{ margin: "15px 0" }} />
       <PostFilter filter={filter} setFilter={setFilter} />
-      <PostList
-        remove={removePost}
-        posts={sortedAndSearchedPosts}
-        title="Список постов Javascript"
-      />
+      {postError && <h1>Произошла ошибка ${postError}</h1>}
+      {isPostsLoading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "50px",
+          }}
+        >
+          <Loader />
+        </div>
+      ) : (
+        <PostList
+          remove={removePost}
+          posts={sortedAndSearchedPosts}
+          title="Список постов Javascript"
+        />
+      )}
     </div>
   );
 }
