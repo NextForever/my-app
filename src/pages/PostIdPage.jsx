@@ -6,7 +6,7 @@ import { useFetching } from "../hooks/useFetching";
 
 const PostIdPage = () => {
   const params = useParams();
-  const [post, setPost] = useState({});
+  const [post, setPost] = useState(null);
   const [fetchPostById, isLoading, error] = useFetching(async (id) => {
     const response = await PostService.getById(id);
     setPost(response.data);
@@ -14,7 +14,7 @@ const PostIdPage = () => {
 
   useEffect(() => {
     fetchPostById(params.id);
-  }, []);
+  });
   return (
     <div>
       <h1>Вы попали на страницу поста c ID {params.id}</h1>
@@ -22,7 +22,7 @@ const PostIdPage = () => {
         <Loader />
       ) : (
         <div>
-          {post.id} . {post.title}{" "}
+          {post.id} . {post.title}
         </div>
       )}
       <div>
