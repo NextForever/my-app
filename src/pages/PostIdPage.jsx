@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useFetching } from "../hooks/useFetching";
 import PostService from "../API/PostService";
 import Loader from "../components/UI/Loader/Loader";
-import { useFetching } from "../hooks/useFetching";
 
 const PostIdPage = () => {
   const params = useParams();
@@ -21,23 +21,24 @@ const PostIdPage = () => {
     fetchPostById(params.id);
     fetchComments(params.id);
   }, []);
+
   return (
     <div>
-      <h1>Вы попали на страницу поста c ID {params.id}</h1>
+      <h1>Вы открыли страницу поста c ID = {params.id}</h1>
       {isLoading ? (
         <Loader />
       ) : (
         <div>
-          {post.id} . {post.title}
+          {post.id}. {post.title}
         </div>
       )}
-      <h2>Коментарии</h2>
+      <h1>Комментарии</h1>
       {isComLoading ? (
         <Loader />
       ) : (
         <div>
           {comments.map((comm) => (
-            <div style={{ marginTop: 15 }}>
+            <div key={comm.id} style={{ marginTop: 15 }}>
               <h5>{comm.email}</h5>
               <div>{comm.body}</div>
             </div>
